@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEMO_DIR="/private/tmp/offline-project-launch-assistant-demo"
 
-echo "Offline Project Launch Assistant Demo"
+echo "Ares Demo"
 echo "Generated workspace path: ${DEMO_DIR}"
 echo
 

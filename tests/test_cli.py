@@ -417,8 +417,8 @@ class CliTests(unittest.TestCase):
             self.assertIn("Project Health:", output)
             self.assertIn("No decision has been recorded yet", output)
             self.assertIn("Write a one-paragraph project brief", output)
-            self.assertIn("python main.py add-decision", output)
-            self.assertIn("python main.py answer-question", output)
+            self.assertIn("ares add-decision", output)
+            self.assertIn("ares answer-question", output)
 
     def test_kickoff_suggested_commands_reflect_resolved_weak_spots(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -435,8 +435,8 @@ class CliTests(unittest.TestCase):
 
             self.assertEqual(code, 0)
             output = stdout.getvalue()
-            self.assertNotIn("python main.py add-decision", output)
-            self.assertNotIn("python main.py answer-question", output)
+            self.assertNotIn("ares add-decision", output)
+            self.assertNotIn("ares answer-question", output)
 
     def test_kickoff_missing_folder_returns_error(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -491,7 +491,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("Weak Spots:", output)
             self.assertIn("Recommended Next Actions", output)
             self.assertIn("Suggested Commands", output)
-            self.assertIn("python main.py add-decision", output)
+            self.assertIn("ares add-decision", output)
 
     def test_kickoff_graph_matches_kickoff_title_and_health_score(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

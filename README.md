@@ -1,6 +1,6 @@
-# Offline Project Launch Assistant
+# Ares
 
-Offline Project Launch Assistant is a terminal-first Python CLI that turns a blank folder and a rough founder or PM idea into a structured, reviewable project workspace. It creates kickoff docs, answers questions from local project notes, tracks decisions and risks, runs readiness reviews, executes workflow-style reports, searches deeper project folders, and optionally inspects CSV business data without requiring cloud APIs or an external AI service.
+Ares is a terminal-first, fully offline PM superagent that turns a blank folder and a rough founder or PM idea into a structured, reviewable project workspace. It creates kickoff docs, answers questions from local project notes, tracks decisions and risks, runs readiness reviews, executes workflow-style reports, searches deeper project folders, and optionally inspects CSV business data without requiring cloud APIs or an external AI service.
 
 ## Why This Project Matters
 
@@ -25,23 +25,29 @@ It then initializes a support dashboard project, adds decisions/risks/tasks, cop
 You can also try the core flow manually:
 
 ```bash
-python main.py init ./customer-support-dashboard "Build a customer support dashboard for support managers"
-python main.py ask ./customer-support-dashboard "What is missing before kickoff?"
-python main.py add-decision ./customer-support-dashboard "Version 1 will target support managers"
-python main.py add-risk ./customer-support-dashboard "Zendesk API access may be delayed"
-python main.py health ./customer-support-dashboard
-python main.py kickoff-graph ./customer-support-dashboard
-python main.py model-status
-python main.py chat ./customer-support-dashboard "What should we do before kickoff?"
-python main.py index ./customer-support-dashboard
-python main.py ask-rag ./customer-support-dashboard "What are customers complaining about?"
-python main.py pm-review ./customer-support-dashboard --fast
-python main.py pm-review ./customer-support-dashboard --full
-python main.py super ./customer-support-dashboard "Prepare this project for kickoff" --fast
-python main.py quality-gate ./customer-support-dashboard
+ares init ./customer-support-dashboard "Build a customer support dashboard for support managers"
+ares ask ./customer-support-dashboard "What is missing before kickoff?"
+ares add-decision ./customer-support-dashboard "Version 1 will target support managers"
+ares add-risk ./customer-support-dashboard "Zendesk API access may be delayed"
+ares health ./customer-support-dashboard
+ares kickoff-graph ./customer-support-dashboard
+ares model-status
+ares chat ./customer-support-dashboard "What should we do before kickoff?"
+ares index ./customer-support-dashboard
+ares ask-rag ./customer-support-dashboard "What are customers complaining about?"
+ares pm-review ./customer-support-dashboard --fast
+ares pm-review ./customer-support-dashboard --full
+ares super ./customer-support-dashboard "Prepare this project for kickoff" --fast
+ares quality-gate ./customer-support-dashboard
 ```
 
 ## Install Locally
+
+With pipx:
+
+```bash
+pipx install .
+```
 
 For development or portfolio review:
 
@@ -49,14 +55,13 @@ For development or portfolio review:
 python3 -m pip install -e .
 ```
 
-Then run either command style:
+Then run the main CLI command:
 
 ```bash
-offline-project-launcher model-status
-opla model-status
+ares model-status
 ```
 
-The project has no required runtime dependencies beyond the Python standard library. Optional local features can use Ollama models, LangGraph, pandas, and NumPy when installed.
+The package is named `ares-pm` for pip and pipx installs. The main CLI command is `ares`; `opla` and `offline-project-launcher` remain available as compatibility aliases. The project has no required runtime dependencies beyond the Python standard library. Optional local features can use Ollama models, LangGraph, pandas, and NumPy when installed.
 
 ## Features
 
@@ -111,33 +116,33 @@ The project has no required runtime dependencies beyond the Python standard libr
 ## Command Reference
 
 ```bash
-python main.py init <folder> <idea>
-python main.py review <folder>
-python main.py next <folder>
-python main.py ask <folder> <question>
-python main.py ask-deep <folder> <question>
-python main.py summarize <folder>
-python main.py add-decision <folder> <decision>
-python main.py add-risk <folder> <risk>
-python main.py add-task <folder> <task>
-python main.py answer-question <folder> <number> <answer>
-python main.py health <folder>
-python main.py kickoff <folder>
-python main.py kickoff-graph <folder>
-python main.py kickoff-langgraph <folder>
-python main.py inspect-data <folder>
-python main.py model-status
-python main.py chat <folder> <question>
-python main.py index <folder>
-python main.py ask-rag <folder> <question>
-python main.py pm-review <folder> [--fast|--full]
-python main.py super <folder> <request> [--fast|--full]
-python main.py ingest <folder> <file>
-python main.py ingest-image <folder> <image>
-python main.py ingest-audio <folder> <audio>
-python main.py ingest-folder <folder> <source-folder>
-python main.py quality-gate <folder>
-python main.py e2e-check
+ares init <folder> <idea>
+ares review <folder>
+ares next <folder>
+ares ask <folder> <question>
+ares ask-deep <folder> <question>
+ares summarize <folder>
+ares add-decision <folder> <decision>
+ares add-risk <folder> <risk>
+ares add-task <folder> <task>
+ares answer-question <folder> <number> <answer>
+ares health <folder>
+ares kickoff <folder>
+ares kickoff-graph <folder>
+ares kickoff-langgraph <folder>
+ares inspect-data <folder>
+ares model-status
+ares chat <folder> <question>
+ares index <folder>
+ares ask-rag <folder> <question>
+ares pm-review <folder> [--fast|--full]
+ares super <folder> <request> [--fast|--full]
+ares ingest <folder> <file>
+ares ingest-image <folder> <image>
+ares ingest-audio <folder> <audio>
+ares ingest-folder <folder> <source-folder>
+ares quality-gate <folder>
+ares e2e-check
 ```
 
 ## Generated Workspace

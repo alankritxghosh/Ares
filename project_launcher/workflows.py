@@ -39,13 +39,13 @@ def suggest_commands(folder: Path, health: HealthReport) -> list[str]:
     for weak_spot in health.weak_spots:
         lowered = weak_spot.lower()
         if "decision" in lowered:
-            commands.append(f'python main.py add-decision {folder_text} "Version 1 will target ..."')
+            commands.append(f'ares add-decision {folder_text} "Version 1 will target ..."')
         elif "open questions" in lowered or "answer" in lowered:
-            commands.append(f'python main.py answer-question {folder_text} 1 "The primary user is ..."')
+            commands.append(f'ares answer-question {folder_text} 1 "The primary user is ..."')
         elif "risk" in lowered:
-            commands.append(f'python main.py add-risk {folder_text} "Name the biggest project risk"')
+            commands.append(f'ares add-risk {folder_text} "Name the biggest project risk"')
         elif "task" in lowered:
-            commands.append(f'python main.py add-task {folder_text} "Interview the first target user"')
+            commands.append(f'ares add-task {folder_text} "Interview the first target user"')
 
     return _unique(commands)
 

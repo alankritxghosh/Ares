@@ -67,7 +67,7 @@ def answer_rag_question(folder: Path, question: str) -> RagAnswer:
         raise ValueError("Please provide a question.")
     if not _index_path(folder).is_file():
         return RagAnswer(
-            answer="No local semantic index found yet.\n\nRun: python main.py index <project>",
+            answer="No local semantic index found yet.\n\nRun: ares index <project>",
             sources=[],
         )
 

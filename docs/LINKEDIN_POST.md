@@ -2,7 +2,7 @@
 
 I built a fully offline PM superagent CLI.
 
-It is called Offline Project Launch Assistant, and the idea is simple:
+It is called Ares, and the idea is simple:
 
 Give it a blank folder and a rough founder/PM idea. It turns that into a structured project workspace with briefs, goals, users, requirements, risks, tasks, decisions, kickoff reports, local RAG, multiagent review, and business data inspection.
 

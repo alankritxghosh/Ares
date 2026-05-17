@@ -1,16 +1,16 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "offline-project-launch-assistant"
+name = "ares-pm"
 version = "0.1.0"
-description = "A fully offline PM/founder superagent CLI for launching project workspaces."
+description = "Ares is a fully offline PM/founder superagent CLI for launching project workspaces."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Alankrit Ghosh" }]
-keywords = ["offline", "product-management", "rag", "multiagent", "ollama", "cli"]
+keywords = ["ares", "offline", "product-management", "rag", "multiagent", "ollama", "cli"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -29,9 +29,9 @@ data = ["numpy", "pandas"]
 langgraph = ["langgraph"]
 
 [project.scripts]
+ares = "project_launcher.cli:main"
 offline-project-launcher = "project_launcher.cli:main"
 opla = "project_launcher.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["project_launcher*"]
-

@@ -11,7 +11,7 @@ bash demo.sh
 Expected opening:
 
 ```text
-Offline Project Launch Assistant Demo
+Ares Demo
 Generated workspace path: /private/tmp/offline-project-launch-assistant-demo
 
 Created project workspace: /private/tmp/offline-project-launch-assistant-demo
@@ -29,7 +29,7 @@ Answered question 1 in open_questions.md
 ## Ask Root Project Docs
 
 ```bash
-python main.py ask /private/tmp/offline-project-launch-assistant-demo "What is missing before kickoff?"
+ares ask /private/tmp/offline-project-launch-assistant-demo "What is missing before kickoff?"
 ```
 
 Representative output:
@@ -48,7 +48,7 @@ Sources:
 ## Ask Deep Project Knowledge
 
 ```bash
-python main.py ask-deep /private/tmp/offline-project-launch-assistant-demo "What are customers complaining about?"
+ares ask-deep /private/tmp/offline-project-launch-assistant-demo "What are customers complaining about?"
 ```
 
 Representative output:
@@ -66,7 +66,7 @@ Sources:
 ## Health Report
 
 ```bash
-python main.py health /private/tmp/offline-project-launch-assistant-demo
+ares health /private/tmp/offline-project-launch-assistant-demo
 ```
 
 Representative output:
@@ -86,7 +86,7 @@ Exact score can change as the generated workspace changes, but the report should
 ## Graph Workflow
 
 ```bash
-python main.py kickoff-graph /private/tmp/offline-project-launch-assistant-demo
+ares kickoff-graph /private/tmp/offline-project-launch-assistant-demo
 ```
 
 Representative output:
@@ -108,7 +108,7 @@ Project: Build A Customer Support Dashboard For Support Managers
 ## Data Inspection
 
 ```bash
-python main.py inspect-data /private/tmp/offline-project-launch-assistant-demo
+ares inspect-data /private/tmp/offline-project-launch-assistant-demo
 ```
 
 If pandas and NumPy are installed, representative output includes:
@@ -138,10 +138,10 @@ Install them with: pip install pandas numpy
 ## Local Models, PM Review, And Superagent
 
 ```bash
-python main.py model-status
-python main.py pm-review /private/tmp/offline-project-launch-assistant-demo --fast
-python main.py pm-review /private/tmp/offline-project-launch-assistant-demo --full
-python main.py super /private/tmp/offline-project-launch-assistant-demo "Prepare this project for kickoff" --fast
+ares model-status
+ares pm-review /private/tmp/offline-project-launch-assistant-demo --fast
+ares pm-review /private/tmp/offline-project-launch-assistant-demo --full
+ares super /private/tmp/offline-project-launch-assistant-demo "Prepare this project for kickoff" --fast
 ```
 
 If Ollama is running with the recommended models, the PM review uses local model responses. If not, it still prints deterministic PM-agent fallback findings:

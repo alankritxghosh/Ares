@@ -25,8 +25,8 @@ from project_launcher.workspace import init_workspace, next_actions, review_work
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="offline-project-launcher",
-        description="Turn a blank folder and rough idea into a founder/PM project workspace.",
+        prog="ares",
+        description="A fully offline PM superagent for turning rough ideas into kickoff-ready project workspaces.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
             for path in result.files:
                 print(f"- {path.name}", file=stdout)
             print("\nNext step:", file=stdout)
-            print(f"python main.py next {result.path}", file=stdout)
+            print(f"ares next {result.path}", file=stdout)
             return 0
 
         if args.command == "review":

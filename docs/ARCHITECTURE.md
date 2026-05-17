@@ -1,6 +1,6 @@
 # Architecture
 
-Offline Project Launch Assistant is intentionally small, modular, and dependency-light. Each layer maps to a project capability that can be understood, tested, and later replaced with a richer AI implementation.
+Ares is intentionally small, modular, and dependency-light. Each layer maps to a project capability that can be understood, tested, and later replaced with a richer AI implementation.
 
 ## System Map
 
