@@ -1,0 +1,7 @@
+ticket_id,priority,status,customer_region,response_time_minutes,satisfaction_score,revenue_amount,agent
+1001,high,open,west,72,3.2,2500,Asha
+1002,medium,closed,east,34,4.6,1200,Ravi
+1003,high,open,west,91,2.8,3100,Asha
+1004,low,closed,south,18,4.9,700,Neha
+1005,medium,pending,,55,3.7,1500,Ravi
+1006,high,escalated,north,110,2.5,4200,Imran
