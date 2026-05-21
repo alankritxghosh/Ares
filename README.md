@@ -67,6 +67,35 @@ ares model-status
 
 The package is named `ares-pm` for pip and pipx installs. The main CLI command is `ares`; `opla` and `offline-project-launcher` remain available as compatibility aliases. The project has no required runtime dependencies beyond the Python standard library. Optional local features can use Ollama models, LangGraph, pandas, and NumPy when installed.
 
+## Using Ares Inside Claude Code
+
+Ares can also run as a local Claude Code MCP server, so Claude can call Ares tools directly instead of asking you to type every command manually.
+
+Install the optional MCP dependency into the pipx environment:
+
+```bash
+pipx inject ares-pm mcp
+```
+
+Register the local server with Claude Code:
+
+```bash
+claude mcp add ares --scope user -- ares-mcp
+```
+
+Then inside Claude Code, ask for Ares naturally:
+
+```text
+Use Ares to create a project called support-dashboard for a support manager dashboard.
+Use Ares to validate it.
+Use Ares to run a fast PM review.
+Use Ares to generate a runbook.
+```
+
+The MCP server exposes safe project creation plus read/review workflows such as catalog, state, validate, drift, runbook, ask, ask-deep, index, ask-rag, pm-review, super, quality-gate, jobs, and job-status. Mutating tools are explicit: `ares_init` creates a workspace and `ares_index` writes the local semantic index.
+
+Optional Claude Code slash prompt examples live in [examples/claude-code-slash-commands](examples/claude-code-slash-commands).
+
 ## Features
 
 ### Project Control Plane
@@ -165,6 +194,7 @@ ares ingest-audio <folder> <audio>
 ares ingest-folder <folder> <source-folder>
 ares quality-gate <folder>
 ares e2e-check
+ares-mcp
 ```
 
 ## Generated Workspace
@@ -193,6 +223,7 @@ project/
 
 ```text
 CLI
+  -> MCP Integration Layer
   -> Project Control Plane
   -> Workspace Generator
   -> Knowledge/Q&A Layer
@@ -205,6 +236,7 @@ CLI
 ```
 
 - **CLI:** `main.py` and `project_launcher/cli.py` parse terminal commands and route work.
+- **MCP Integration Layer:** `mcp_server.py` exposes selected Ares capabilities as local Claude Code tools through the optional `ares-mcp` entry point.
 - **Project Control Plane:** `config.py`, `state.py`, `validate.py`, `drift.py`, `jobs.py`, and `catalog.py` turn the Markdown workspace into declarative local project state.
 - **Workspace Generator:** `workspace.py`, `agents.py`, and `templates.py` create the first project workspace.
 - **Knowledge/Q&A Layer:** `knowledge.py` reads root Markdown and returns source-aware answers.
@@ -235,6 +267,12 @@ Install pandas and NumPy only if you want CSV data inspection:
 
 ```bash
 pip install pandas numpy
+```
+
+Install MCP support only if you want Claude Code tool integration:
+
+```bash
+pipx inject ares-pm mcp
 ```
 
 Install local Ollama models only if you want local chat, semantic RAG, and image review:

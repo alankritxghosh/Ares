@@ -6,6 +6,7 @@ Ares is intentionally small, modular, and dependency-light. The newest layer mak
 
 ```text
 CLI
+  -> MCP Integration Layer
   -> Project Control Plane
   -> Workspace Generator
   -> Knowledge/Q&A Layer
@@ -26,6 +27,10 @@ CLI
 ### CLI
 
 `main.py` delegates to `project_launcher/cli.py`. The CLI handles argument parsing, command routing, friendly output, and consistent exit codes.
+
+### MCP Integration Layer
+
+`mcp_server.py` exposes selected Ares internals as a local stdio MCP server for Claude Code. The entry point is `ares-mcp`, and the optional dependency is installed with `pipx inject ares-pm mcp`. The layer keeps the normal CLI unchanged, labels mutating tools clearly, and returns plain text reports so Claude can show the same outputs a terminal user would see.
 
 ### Project Control Plane
 
@@ -86,4 +91,5 @@ CLI
 - Optional dependencies: LangGraph, pandas, and NumPy are additive rather than required.
 - Append-oriented edits: project files remain readable and recoverable.
 - Control-plane state: commands can share the same view of project config, evidence, health, and job history.
+- Tool-server friendly: Claude Code can use Ares through local MCP without changing the underlying command behavior.
 - Codex-friendly structure: modules are small enough for an agent or reviewer to navigate quickly.

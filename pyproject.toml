@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ares-pm"
-version = "0.2.0"
+version = "0.3.0"
 description = "Ares is a fully offline PM/founder superagent CLI for launching project workspaces."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,9 +27,11 @@ dependencies = []
 [project.optional-dependencies]
 data = ["numpy", "pandas"]
 langgraph = ["langgraph"]
+mcp = ["mcp"]
 
 [project.scripts]
 ares = "project_launcher.cli:main"
+ares-mcp = "project_launcher.mcp_server:main"
 offline-project-launcher = "project_launcher.cli:main"
 opla = "project_launcher.cli:main"
 

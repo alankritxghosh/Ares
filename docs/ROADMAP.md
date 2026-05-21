@@ -2,6 +2,12 @@
 
 The current version is a complete offline CLI demo with a local project control plane, optional local model, semantic RAG, multiagent, superagent, ingestion, quality gate, and E2E UX-check paths. Future phases can deepen the intelligence while preserving the same terminal-first workflow.
 
+## v0.3 Claude Code MCP Integration
+
+- Expose Ares as `ares-mcp`, an optional local stdio MCP server for Claude Code.
+- Keep the core CLI dependency-light while allowing `pipx inject ares-pm mcp` for tool integration.
+- Start with safe project creation plus read/review workflows before adding append/edit tools through MCP.
+
 ## Near-Term Improvements
 
 - Add task completion and status tracking.

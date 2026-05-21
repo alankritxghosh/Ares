@@ -201,6 +201,38 @@ Recommended Next Actions:
 1. Write a one-paragraph project brief
 ```
 
+## Claude Code MCP
+
+One-time setup:
+
+```bash
+pipx inject ares-pm mcp
+claude mcp add ares --scope user -- ares-mcp
+```
+
+Then inside Claude Code:
+
+```text
+Use Ares to inspect this project workspace and tell me what is missing before kickoff.
+Use Ares to validate it and generate a runbook.
+Use Ares to run a fast PM review.
+```
+
+Expected tool-backed output still uses the same Ares report shapes:
+
+```text
+Project State
+...
+
+Validation Report
+...
+
+PM Review
+...
+Timing:
+- Mode: fast
+```
+
 ## E2E UX Check
 
 ```bash

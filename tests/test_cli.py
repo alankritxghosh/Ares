@@ -11,6 +11,7 @@ from unittest.mock import patch
 import project_launcher.cli as cli
 import project_launcher.data_inspector as data_inspector
 import project_launcher.local_models as local_models
+import project_launcher.mcp_server as mcp_server
 from project_launcher.cli import main
 from project_launcher.workspace import REQUIRED_DIRS, REQUIRED_FILES
 
@@ -1177,6 +1178,109 @@ class CliTests(unittest.TestCase):
 
         self.assertTrue(script.is_file())
         self.assertTrue(script.stat().st_mode & 0o111)
+
+    def test_mcp_main_reports_setup_when_dependency_missing(self) -> None:
+        original = mcp_server.build_server
+        mcp_server.build_server = lambda: (_ for _ in ()).throw(RuntimeError(mcp_server.MCP_SETUP_MESSAGE.strip()))
+        try:
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = mcp_server.main()
+        finally:
+            mcp_server.build_server = original
+
+        self.assertEqual(code, 1)
+        self.assertIn("MCP support is not installed", stderr.getvalue())
+        self.assertIn("pipx inject ares-pm mcp", stderr.getvalue())
+
+    def test_mcp_wrappers_create_workspace_and_return_control_plane_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+
+            init_output = mcp_server.ares_init(str(target), "Build a support dashboard", "saas-dashboard", "discovery")
+            state_output = mcp_server.ares_state(str(target))
+            validate_output = mcp_server.ares_validate(str(target))
+            drift_output = mcp_server.ares_drift(str(target))
+            runbook_output = mcp_server.ares_runbook(str(target))
+
+            self.assertTrue((target / "ares.yaml").is_file())
+            self.assertIn("Created project workspace", init_output)
+            self.assertIn("Project State", state_output)
+            self.assertIn("Validation Report", validate_output)
+            self.assertIn("Drift Report", drift_output)
+            self.assertIn("Ares Project Runbook", runbook_output)
+
+    def test_mcp_ask_wrappers_return_source_aware_text(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            (target / "research" / "customer-interviews.md").write_text(
+                "# Customer Interviews\n\n- Customers complain about slow response time.\n",
+                encoding="utf-8",
+            )
+
+            ask_output = mcp_server.ares_ask(str(target), "What are the top risks?")
+            deep_output = mcp_server.ares_ask_deep(str(target), "What are customers complaining about?")
+
+            self.assertIn("Answer:", ask_output)
+            self.assertIn("risks.md", ask_output)
+            self.assertIn("Customers complain about slow response time", deep_output)
+            self.assertIn("research/customer-interviews.md", deep_output)
+
+    @patch.object(local_models, "generate_text", side_effect=local_models.LocalModelUnavailableError("missing"))
+    def test_mcp_pm_review_supports_fast_and_full_modes(self, _mock_generate) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+
+            fast_output = mcp_server.ares_pm_review(str(target), "fast")
+            full_output = mcp_server.ares_pm_review(str(target), "full")
+
+            self.assertIn("PM Review", fast_output)
+            self.assertIn("- Mode: fast", fast_output)
+            self.assertIn("- Agents run: 3", fast_output)
+            self.assertNotIn("Founder Clarifier", fast_output)
+            self.assertIn("- Mode: full", full_output)
+            self.assertIn("- Agents run: 7", full_output)
+            self.assertIn("Founder Clarifier", full_output)
+
+    @patch.object(local_models, "generate_text", side_effect=local_models.LocalModelUnavailableError("missing"))
+    def test_mcp_super_supports_fast_and_full_modes(self, _mock_generate) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+
+            fast_output = mcp_server.ares_super(str(target), "Prepare this project for kickoff", "fast")
+            full_output = mcp_server.ares_super(str(target), "Prepare this project for kickoff", "full")
+
+            self.assertIn("Superagent Response", fast_output)
+            self.assertIn("- Mode: fast", fast_output)
+            self.assertIn("Superagent Response", full_output)
+            self.assertIn("- Mode: full", full_output)
+
+    def test_mcp_quality_gate_and_jobs_wrappers_return_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+
+            quality_output = mcp_server.ares_quality_gate(str(target))
+            jobs_output = mcp_server.ares_jobs(str(target))
+            job_line = next(line for line in jobs_output.splitlines() if line.startswith("- job-"))
+            job_id = job_line.split()[1]
+            status_output = mcp_server.ares_job_status(str(target), job_id)
+
+            self.assertIn("Quality Gate Rating:", quality_output)
+            self.assertIn("quality-gate", jobs_output)
+            self.assertIn("Job Status", status_output)
+
+    def test_mcp_missing_folder_errors_are_readable(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "missing"
+
+            output = mcp_server.ares_state(str(target))
+
+            self.assertIn("Error:", output)
+            self.assertIn("is not a project folder", output)
 
 
 if __name__ == "__main__":
