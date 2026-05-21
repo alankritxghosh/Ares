@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import replace
 from pathlib import Path
 
 from project_launcher.agents import create_project_plan
+from project_launcher.catalog import DEFAULT_PROJECT_TYPE, DEFAULT_STAGE, get_catalog_entry
+from project_launcher.config import default_config, write_config
 from project_launcher.templates import all_templates
 
 
@@ -18,6 +21,7 @@ REQUIRED_FILES = [
     "open_questions.md",
     "tasks.md",
     "decisions.md",
+    "ares.yaml",
 ]
 
 REQUIRED_DIRS = ["research", "designs", "data", "docs", "reports"]
@@ -43,7 +47,7 @@ def is_empty_directory(path: Path) -> bool:
     return path.is_dir() and not any(path.iterdir())
 
 
-def init_workspace(folder: Path, idea: str) -> InitResult:
+def init_workspace(folder: Path, idea: str, project_type: str = DEFAULT_PROJECT_TYPE, stage: str = DEFAULT_STAGE, apply_catalog: bool = False) -> InitResult:
     folder = folder.expanduser().resolve()
     if not idea.strip():
         raise ValueError("Please provide a project idea.")
@@ -57,6 +61,9 @@ def init_workspace(folder: Path, idea: str) -> InitResult:
     folder.mkdir(parents=True, exist_ok=True)
 
     plan = create_project_plan(idea)
+    if apply_catalog:
+        catalog_entry = get_catalog_entry(project_type)
+        plan = _apply_catalog(plan, catalog_entry)
     created_dirs: list[Path] = []
     for directory in REQUIRED_DIRS:
         target = folder / directory
@@ -68,8 +75,20 @@ def init_workspace(folder: Path, idea: str) -> InitResult:
         target = folder / filename
         target.write_text(content, encoding="utf-8")
         created_files.append(target)
+    config_path = write_config(folder, default_config(plan.title, plan.idea, project_type=project_type, stage=stage))
+    created_files.append(config_path)
 
     return InitResult(path=folder, files=created_files, directories=created_dirs)
+
+
+def _apply_catalog(plan, catalog_entry):
+    return replace(
+        plan,
+        requirements=[*plan.requirements, *catalog_entry.extra_requirements],
+        risks=[*plan.risks, *catalog_entry.extra_risks],
+        open_questions=[*plan.open_questions, *catalog_entry.extra_questions],
+        tasks=[*plan.tasks, *catalog_entry.extra_tasks],
+    )
 
 
 def review_workspace(folder: Path) -> ReviewResult:

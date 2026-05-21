@@ -5,20 +5,26 @@ import sys
 from pathlib import Path
 from typing import TextIO
 
+from project_launcher.catalog import format_catalog
 from project_launcher.data_inspector import format_data_inspection, inspect_data_folder
+from project_launcher.drift import detect_drift, format_drift
 from project_launcher.e2e import run_e2e_check
 from project_launcher.editor import add_decision, add_risk, add_task, answer_question
 from project_launcher.graph import run_kickoff_graph
 from project_launcher.health import assess_health
 from project_launcher.ingest import ingest_audio, ingest_file, ingest_folder, ingest_image
+from project_launcher.jobs import format_job, format_jobs, get_job, list_jobs, run_with_job
 from project_launcher.knowledge import ask_project, summarize_project
 from project_launcher.langgraph_workflow import run_kickoff_langgraph
 from project_launcher.local_models import LocalModelUnavailableError, check_model_status, format_model_status, generate_text, setup_message
 from project_launcher.multiagent import run_pm_review
 from project_launcher.quality import format_quality_gate, run_quality_gate
 from project_launcher.rag import answer_deep_question
+from project_launcher.runbook import generate_runbook
 from project_launcher.semantic_rag import answer_rag_question, index_project
+from project_launcher.state import build_project_state, format_state
 from project_launcher.superagent import run_superagent
+from project_launcher.validate import format_validation, validate_project
 from project_launcher.workflows import run_kickoff_workflow
 from project_launcher.workspace import init_workspace, next_actions, review_workspace
 
@@ -33,9 +39,32 @@ def build_parser() -> argparse.ArgumentParser:
     init_parser = subparsers.add_parser("init", help="Create a new project workspace.")
     init_parser.add_argument("folder", help="New or empty folder to initialize.")
     init_parser.add_argument("idea", help="Rough founder/PM project idea.")
+    init_parser.add_argument("--type", default=None, dest="project_type", help="Project catalog type.")
+    init_parser.add_argument("--stage", default="discovery", help="Project stage.")
+
+    subparsers.add_parser("catalog", help="List built-in project catalog types.")
 
     review_parser = subparsers.add_parser("review", help="Review workspace completeness.")
     review_parser.add_argument("folder", help="Project workspace folder.")
+
+    state_parser = subparsers.add_parser("state", help="Print the Ares project control-plane state.")
+    state_parser.add_argument("folder", help="Project workspace folder.")
+
+    validate_parser = subparsers.add_parser("validate", help="Validate project control-plane readiness.")
+    validate_parser.add_argument("folder", help="Project workspace folder.")
+
+    drift_parser = subparsers.add_parser("drift", help="Detect project-management drift.")
+    drift_parser.add_argument("folder", help="Project workspace folder.")
+
+    runbook_parser = subparsers.add_parser("runbook", help="Print an operational project runbook.")
+    runbook_parser.add_argument("folder", help="Project workspace folder.")
+
+    jobs_parser = subparsers.add_parser("jobs", help="List recorded long-running command jobs.")
+    jobs_parser.add_argument("folder", help="Project workspace folder.")
+
+    job_status_parser = subparsers.add_parser("job-status", help="Show one recorded job.")
+    job_status_parser.add_argument("folder", help="Project workspace folder.")
+    job_status_parser.add_argument("job_id", help="Job identifier.")
 
     next_parser = subparsers.add_parser("next", help="Suggest the next project actions.")
     next_parser.add_argument("folder", help="Project workspace folder.")
@@ -137,7 +166,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
 
     try:
         if args.command == "init":
-            result = init_workspace(Path(args.folder), args.idea)
+            result = init_workspace(
+                Path(args.folder),
+                args.idea,
+                project_type=args.project_type or "founder-mvp",
+                stage=args.stage,
+                apply_catalog=args.project_type is not None,
+            )
             print(f"Created project workspace: {result.path}", file=stdout)
             print("\nFolders:", file=stdout)
             for directory in result.directories:
@@ -149,6 +184,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
             print(f"ares next {result.path}", file=stdout)
             return 0
 
+        if args.command == "catalog":
+            print(format_catalog(), end="", file=stdout)
+            return 0
+
         if args.command == "review":
             result = review_workspace(Path(args.folder))
             print(f"Workspace: {result.path}", file=stdout)
@@ -158,6 +197,30 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
             _print_list("Empty files", result.empty_files, stdout)
             if result.readiness_score == 100:
                 print("\nReady for kickoff.", file=stdout)
+            return 0
+
+        if args.command == "state":
+            print(format_state(build_project_state(Path(args.folder))), end="", file=stdout)
+            return 0
+
+        if args.command == "validate":
+            print(format_validation(validate_project(Path(args.folder))), end="", file=stdout)
+            return 0
+
+        if args.command == "drift":
+            print(format_drift(detect_drift(Path(args.folder))), end="", file=stdout)
+            return 0
+
+        if args.command == "runbook":
+            print(generate_runbook(Path(args.folder)), end="", file=stdout)
+            return 0
+
+        if args.command == "jobs":
+            print(format_jobs(list_jobs(Path(args.folder))), end="", file=stdout)
+            return 0
+
+        if args.command == "job-status":
+            print(format_job(get_job(Path(args.folder), args.job_id)), end="", file=stdout)
             return 0
 
         if args.command == "next":
@@ -284,7 +347,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
             return 0
 
         if args.command == "index":
-            result = index_project(Path(args.folder))
+            folder = Path(args.folder)
+            result = run_with_job(folder, "index", lambda: index_project(folder), lambda item: f"Indexed {item.chunk_count} chunks")
             print(f"Indexed project: {result.index_path}", file=stdout)
             print(f"Chunks: {result.chunk_count}", file=stdout)
             _print_list("Sources", result.sources, stdout)
@@ -301,12 +365,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
             return 0
 
         if args.command == "pm-review":
-            result = run_pm_review(Path(args.folder), mode=args.review_mode)
+            folder = Path(args.folder)
+            result = run_with_job(folder, f"pm-review --{args.review_mode}", lambda: run_pm_review(folder, mode=args.review_mode), lambda item: f"PM review {item.mode}, {len(item.findings)} agents")
             print(result.report, end="", file=stdout)
             return 0
 
         if args.command == "super":
-            result = run_superagent(Path(args.folder), args.request, mode=args.review_mode)
+            folder = Path(args.folder)
+            result = run_with_job(folder, f"super --{args.review_mode}", lambda: run_superagent(folder, args.request, mode=args.review_mode), lambda _item: "Superagent response generated")
             print(result.report, end="", file=stdout)
             return 0
 
@@ -332,7 +398,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None, stderr: Te
             return 0
 
         if args.command == "quality-gate":
-            print(format_quality_gate(run_quality_gate(Path(args.folder))), end="", file=stdout)
+            folder = Path(args.folder)
+            result = run_with_job(folder, "quality-gate", lambda: run_quality_gate(folder), lambda item: f"Quality gate {item.rating:.1f}/10")
+            print(format_quality_gate(result), end="", file=stdout)
             return 0
 
         if args.command == "e2e-check":

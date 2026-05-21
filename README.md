@@ -1,6 +1,6 @@
 # Ares
 
-Ares is a terminal-first, fully offline PM superagent that turns a blank folder and a rough founder or PM idea into a structured, reviewable project workspace. It creates kickoff docs, answers questions from local project notes, tracks decisions and risks, runs readiness reviews, executes workflow-style reports, searches deeper project folders, and optionally inspects CSV business data without requiring cloud APIs or an external AI service.
+Ares is a terminal-first, fully offline PM superagent and local project control plane. It turns a blank folder and a rough founder or PM idea into a structured, reviewable project workspace, then keeps that workspace understandable through declarative config, state inspection, validation, drift detection, workflow reports, local RAG, multiagent review, and optional CSV inspection without requiring cloud APIs or an external AI service.
 
 ## Why This Project Matters
 
@@ -26,6 +26,10 @@ You can also try the core flow manually:
 
 ```bash
 ares init ./customer-support-dashboard "Build a customer support dashboard for support managers"
+ares state ./customer-support-dashboard
+ares validate ./customer-support-dashboard
+ares drift ./customer-support-dashboard
+ares runbook ./customer-support-dashboard
 ares ask ./customer-support-dashboard "What is missing before kickoff?"
 ares add-decision ./customer-support-dashboard "Version 1 will target support managers"
 ares add-risk ./customer-support-dashboard "Zendesk API access may be delayed"
@@ -65,9 +69,20 @@ The package is named `ares-pm` for pip and pipx installs. The main CLI command i
 
 ## Features
 
+### Project Control Plane
+
+- `ares.yaml` records project type, stage, review mode, quality threshold, and enabled modules.
+- `catalog` lists built-in project templates for SaaS dashboards, AI agents, internal tools, data products, marketplace apps, and founder MVPs.
+- `state` builds a shared project state from config, Markdown, health, evidence, decisions, questions, and semantic index status.
+- `validate` checks whether the project is ready for serious review.
+- `drift` detects project-management drift such as stale indexes, unanswered questions, risks without mitigation tasks, and config/docs mismatch.
+- `runbook` prints an operational guide for understanding, reviewing, and debugging a project.
+- `jobs` and `job-status` show the local job ledger for long-running commands.
+
 ### Workspace Generation
 
 - Creates a structured project folder from a plain-English idea.
+- Supports `--type` and `--stage` for catalog-driven starter workspaces.
 - Generates starter Markdown for brief, goals, users, requirements, roadmap, risks, open questions, tasks, and decisions.
 - Refuses to overwrite a non-empty folder.
 
@@ -116,7 +131,14 @@ The package is named `ares-pm` for pip and pipx installs. The main CLI command i
 ## Command Reference
 
 ```bash
-ares init <folder> <idea>
+ares init <folder> <idea> [--type <type>] [--stage <stage>]
+ares catalog
+ares state <folder>
+ares validate <folder>
+ares drift <folder>
+ares runbook <folder>
+ares jobs <folder>
+ares job-status <folder> <job-id>
 ares review <folder>
 ares next <folder>
 ares ask <folder> <question>
@@ -150,6 +172,7 @@ ares e2e-check
 ```text
 project/
   README.md
+  ares.yaml
   brief.md
   goals.md
   users.md
@@ -170,6 +193,7 @@ project/
 
 ```text
 CLI
+  -> Project Control Plane
   -> Workspace Generator
   -> Knowledge/Q&A Layer
   -> Editor Layer
@@ -181,6 +205,7 @@ CLI
 ```
 
 - **CLI:** `main.py` and `project_launcher/cli.py` parse terminal commands and route work.
+- **Project Control Plane:** `config.py`, `state.py`, `validate.py`, `drift.py`, `jobs.py`, and `catalog.py` turn the Markdown workspace into declarative local project state.
 - **Workspace Generator:** `workspace.py`, `agents.py`, and `templates.py` create the first project workspace.
 - **Knowledge/Q&A Layer:** `knowledge.py` reads root Markdown and returns source-aware answers.
 - **Editor Layer:** `editor.py` performs conservative append-oriented Markdown updates.

@@ -1,6 +1,6 @@
 # Roadmap
 
-The current version is a complete offline CLI demo with optional local model, semantic RAG, multiagent, superagent, ingestion, quality gate, and E2E UX-check paths. Future phases can deepen the intelligence while preserving the same terminal-first workflow.
+The current version is a complete offline CLI demo with a local project control plane, optional local model, semantic RAG, multiagent, superagent, ingestion, quality gate, and E2E UX-check paths. Future phases can deepen the intelligence while preserving the same terminal-first workflow.
 
 ## Near-Term Improvements
 
@@ -8,6 +8,8 @@ The current version is a complete offline CLI demo with optional local model, se
 - Export health and kickoff reports as Markdown or HTML.
 - Add richer example project packs for sales, hiring, finance, and operations use cases.
 - Improve command suggestions with more project-specific wording.
+- Add background execution for the existing job ledger.
+- Let `ares runbook` optionally export Markdown into `reports/`.
 
 ## AI And Retrieval
 
@@ -21,6 +23,7 @@ The current version is a complete offline CLI demo with optional local model, se
 - Expand LangGraph state beyond the current kickoff mirror and current multiagent report.
 - Add conditional workflow branches for weak project health, missing data, or unanswered questions.
 - Persist workflow traces as report artifacts.
+- Route graph workflows through `ProjectState` by default.
 - Add more reviewer-agent nodes, such as market validation, requirements clarity, and execution risk.
 
 ## Data Inspection

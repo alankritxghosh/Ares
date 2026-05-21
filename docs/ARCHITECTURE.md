@@ -1,11 +1,12 @@
 # Architecture
 
-Ares is intentionally small, modular, and dependency-light. Each layer maps to a project capability that can be understood, tested, and later replaced with a richer AI implementation.
+Ares is intentionally small, modular, and dependency-light. The newest layer makes it a local project control plane: users declare intent in `ares.yaml`, Ares builds shared project state from the workspace, then validation, drift detection, workflows, and agents operate over that state.
 
 ## System Map
 
 ```text
 CLI
+  -> Project Control Plane
   -> Workspace Generator
   -> Knowledge/Q&A Layer
   -> Editor Layer
@@ -25,6 +26,10 @@ CLI
 ### CLI
 
 `main.py` delegates to `project_launcher/cli.py`. The CLI handles argument parsing, command routing, friendly output, and consistent exit codes.
+
+### Project Control Plane
+
+`config.py`, `state.py`, `validate.py`, `drift.py`, `jobs.py`, and `catalog.py` provide the platform layer. `ares.yaml` captures desired project state, `state` summarizes what exists, `validate` checks readiness, `drift` finds project-management mismatch, and `.project_launcher/jobs.json` records long-running command history.
 
 ### Workspace Generator
 
@@ -80,4 +85,5 @@ CLI
 - Explainable before clever: deterministic scoring and retrieval make behavior easy to inspect.
 - Optional dependencies: LangGraph, pandas, and NumPy are additive rather than required.
 - Append-oriented edits: project files remain readable and recoverable.
+- Control-plane state: commands can share the same view of project config, evidence, health, and job history.
 - Codex-friendly structure: modules are small enough for an agent or reviewer to navigate quickly.

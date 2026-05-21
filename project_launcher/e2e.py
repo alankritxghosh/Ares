@@ -9,10 +9,13 @@ from project_launcher import local_models
 from project_launcher.editor import add_decision, add_risk, add_task, answer_question
 from project_launcher.graph import run_kickoff_graph
 from project_launcher.ingest import ingest_file
+from project_launcher.drift import detect_drift, format_drift
 from project_launcher.multiagent import run_pm_review
 from project_launcher.quality import format_quality_gate, run_quality_gate
 from project_launcher.semantic_rag import answer_rag_question, index_project
+from project_launcher.state import build_project_state, format_state
 from project_launcher.superagent import run_superagent
+from project_launcher.validate import format_validation, validate_project
 from project_launcher.workspace import init_workspace
 
 
@@ -56,13 +59,16 @@ def run_e2e_check() -> E2EResult:
         ingest_file(project, sample)
         index_project(project)
         rag = answer_rag_question(project, "What are customers complaining about?")
+        state = format_state(build_project_state(project))
+        validation = format_validation(validate_project(project))
+        drift = format_drift(detect_drift(project))
         pm = run_pm_review(project, mode="fast")
         super_result = run_superagent(project, "Prepare this project for kickoff", mode="fast")
         graph = run_kickoff_graph(project)
         quality = run_quality_gate(project)
 
-        combined = "\n".join([rag.answer, pm.report, super_result.report, graph.report, format_quality_gate(quality)])
-        required = ["Sources:", "Agent Findings", "Suggested Commands", "Trace:", "Quality Gate Rating"]
+        combined = "\n".join([rag.answer, state, validation, drift, pm.report, super_result.report, graph.report, format_quality_gate(quality)])
+        required = ["Sources:", "Project State", "Validation Report", "Drift Report", "Agent Findings", "Suggested Commands", "Trace:", "Quality Gate Rating"]
         missing = [marker for marker in required if marker not in combined]
         passed = not missing and quality.rating >= 9.5
         output = io.StringIO()

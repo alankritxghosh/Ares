@@ -25,6 +25,12 @@ cp "${ROOT_DIR}/examples/support-dashboard/data/support_tickets.csv" "${DEMO_DIR
 printf "Support managers need a single daily view of high-priority open tickets.\n" > "${DEMO_DIR}/docs/local-note.txt"
 
 echo
+echo "== Project control plane =="
+python3 -B "${ROOT_DIR}/main.py" state "${DEMO_DIR}"
+python3 -B "${ROOT_DIR}/main.py" validate "${DEMO_DIR}"
+python3 -B "${ROOT_DIR}/main.py" drift "${DEMO_DIR}"
+
+echo
 echo "== Ask root project docs =="
 python3 -B "${ROOT_DIR}/main.py" ask "${DEMO_DIR}" "What is missing before kickoff?"
 
@@ -71,3 +77,7 @@ python3 -B "${ROOT_DIR}/main.py" ingest "${DEMO_DIR}" "${DEMO_DIR}/docs/local-no
 echo
 echo "== Quality gate =="
 python3 -B "${ROOT_DIR}/main.py" quality-gate "${DEMO_DIR}"
+
+echo
+echo "== Job ledger =="
+python3 -B "${ROOT_DIR}/main.py" jobs "${DEMO_DIR}"

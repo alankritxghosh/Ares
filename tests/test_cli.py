@@ -34,6 +34,132 @@ class CliTests(unittest.TestCase):
             for directory in REQUIRED_DIRS:
                 self.assertTrue((target / directory).is_dir(), directory)
             self.assertIn("Created project workspace", stdout.getvalue())
+            self.assertTrue((target / "ares.yaml").is_file())
+            self.assertIn("type: founder-mvp", (target / "ares.yaml").read_text(encoding="utf-8"))
+
+    def test_catalog_lists_project_types(self) -> None:
+        stdout = io.StringIO()
+
+        code = main(["catalog"], stdout=stdout)
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Ares Project Catalog", output)
+        self.assertIn("saas-dashboard", output)
+        self.assertIn("ai-agent", output)
+
+    def test_init_with_type_and_stage_updates_config_and_content(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+
+            code = main(
+                ["init", str(target), "Build a support dashboard", "--type", "saas-dashboard", "--stage", "validation"],
+                stdout=io.StringIO(),
+            )
+
+            self.assertEqual(code, 0)
+            config = (target / "ares.yaml").read_text(encoding="utf-8")
+            self.assertIn("type: saas-dashboard", config)
+            self.assertIn("stage: validation", config)
+            self.assertIn("core metrics", (target / "requirements.md").read_text(encoding="utf-8"))
+
+    def test_existing_workspace_without_config_still_supports_core_commands(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            (target / "ares.yaml").unlink()
+
+            health = main(["health", str(target)], stdout=io.StringIO())
+            ask = main(["ask", str(target), "What are the risks?"], stdout=io.StringIO())
+            graph = main(["kickoff-graph", str(target)], stdout=io.StringIO())
+            with patch.object(local_models, "generate_text", side_effect=local_models.LocalModelUnavailableError("missing")):
+                review = main(["pm-review", str(target), "--fast"], stdout=io.StringIO())
+
+            self.assertEqual(health, 0)
+            self.assertEqual(ask, 0)
+            self.assertEqual(graph, 0)
+            self.assertEqual(review, 0)
+
+    def test_state_prints_control_plane_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            stdout = io.StringIO()
+
+            code = main(["state", str(target)], stdout=stdout)
+
+            self.assertEqual(code, 0)
+            output = stdout.getvalue()
+            self.assertIn("Project State", output)
+            self.assertIn("Stage: discovery", output)
+            self.assertIn("Health:", output)
+            self.assertIn("Evidence sources:", output)
+
+    def test_validate_reports_config_and_suggested_commands(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            stdout = io.StringIO()
+
+            code = main(["validate", str(target)], stdout=stdout)
+
+            self.assertEqual(code, 0)
+            output = stdout.getvalue()
+            self.assertIn("Validation Report", output)
+            self.assertIn("[PASS] ares.yaml is present", output)
+            self.assertIn("[FAIL] Primary user is declared in config", output)
+            self.assertIn("ares add-decision", output)
+
+    def test_runbook_prints_operational_guide(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            stdout = io.StringIO()
+
+            code = main(["runbook", str(target)], stdout=stdout)
+
+            self.assertEqual(code, 0)
+            output = stdout.getvalue()
+            self.assertIn("Ares Project Runbook", output)
+            self.assertIn("Before Kickoff", output)
+            self.assertIn("Debugging Notes", output)
+
+    def test_drift_detects_project_management_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            (target / ".project_launcher").mkdir()
+            (target / ".project_launcher" / "index.json").write_text('{"chunks": [{"modified_time": 1}]}', encoding="utf-8")
+            stdout = io.StringIO()
+
+            code = main(["drift", str(target)], stdout=stdout)
+
+            self.assertEqual(code, 0)
+            output = stdout.getvalue()
+            self.assertIn("Drift Report", output)
+            self.assertIn("Attention needed", output)
+            self.assertIn("no product decision", output)
+            self.assertIn("semantic index", output.lower())
+
+    def test_jobs_and_job_status_record_long_running_command(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            target = Path(temp_dir) / "workspace"
+            main(["init", str(target), "Build a support dashboard"], stdout=io.StringIO())
+            with patch.object(local_models, "generate_text", side_effect=local_models.LocalModelUnavailableError("missing")):
+                code = main(["pm-review", str(target), "--fast"], stdout=io.StringIO())
+            jobs_stdout = io.StringIO()
+
+            jobs_code = main(["jobs", str(target)], stdout=jobs_stdout)
+            job_line = next(line for line in jobs_stdout.getvalue().splitlines() if line.startswith("- job-"))
+            job_id = job_line.split()[1]
+            status_stdout = io.StringIO()
+            status_code = main(["job-status", str(target), job_id], stdout=status_stdout)
+
+            self.assertEqual(code, 0)
+            self.assertEqual(jobs_code, 0)
+            self.assertEqual(status_code, 0)
+            self.assertIn("pm-review --fast", jobs_stdout.getvalue())
+            self.assertIn("Job Status", status_stdout.getvalue())
 
     def test_init_uses_existing_empty_folder(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

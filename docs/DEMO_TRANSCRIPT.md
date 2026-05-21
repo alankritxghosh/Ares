@@ -26,6 +26,31 @@ Added task 6 to tasks.md
 Answered question 1 in open_questions.md
 ```
 
+## Project Control Plane
+
+```bash
+ares state /private/tmp/offline-project-launch-assistant-demo
+ares validate /private/tmp/offline-project-launch-assistant-demo
+ares drift /private/tmp/offline-project-launch-assistant-demo
+```
+
+Representative output:
+
+```text
+Project State
+
+Name: Build a Customer Support Dashboard for Support Managers
+Stage: discovery
+Health: 100%
+Semantic index: missing
+
+Validation Report
+- [PASS] ares.yaml is present
+
+Drift Report
+Status: No drift detected
+```
+
 ## Ask Root Project Docs
 
 ```bash
